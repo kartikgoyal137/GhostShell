@@ -10,7 +10,7 @@ def send_notification(message: str):
     Args:
         message: The text to display in the notification.
     """
-    cmd = f"dispatch notify 1 10000 'rgb(ff1ea3)' '{message}'"
+    cmd = f"hyprctl notify 1 10000 'rgb(ff1ea3)' '{message}'"
     return client.send_command(cmd)
 
 def get_open_windows():
