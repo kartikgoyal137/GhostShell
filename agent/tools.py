@@ -1,7 +1,17 @@
 import time 
 from client import GhostClient
+import subprocess
 
 client = GhostClient()
+
+def send_notification(message: str):
+    """
+    Sends a visual notification popup to the desktop using Hyprland's notify system.
+    Args:
+        message: The text to display in the notification.
+    """
+    cmd = f"dispatch notify 1 10000 'rgb(ff1ea3)' '{message}'"
+    return client.send_command(cmd)
 
 def get_open_windows():
     """
@@ -52,13 +62,36 @@ def close_active_window():
 
 def control_media(action: str):
     """
-    Controls media playback.
+    Controls media playback. 
+    Returns the new playback status so the agent knows the action succeeded.
     Args:
-        action: One of 'play', 'pause', 'next', 'previous', 'stop'.
+        action: 'play', 'pause',  'next', 'previous'
     """
-    valid_actions = ['play', 'pause', 'next', 'previous', 'stop']
-    if action not in valid_actions:
-        return f"Invalid action. Use: {valid_actions}"
     
-    cmd = f"playerctl {action}"
-    return client.send_command(cmd)
+    subprocess.run(["playerctl", action])
+    
+    
+    try:
+        new_status = subprocess.check_output(["playerctl", "status"], text=True).strip()
+        return f"Action '{action}' successful. Current status: {new_status}"
+    except:
+        return f"Action '{action}' sent, but no active player found."
+    
+
+def get_media_info():
+    """
+    Returns the current player status and metadata (Artist - Title).
+    Use this to check if music is already playing before starting it.
+    """
+    try:
+        status = subprocess.check_output(["playerctl", "status"], text=True).strip()
+        metadata = subprocess.check_output(
+            ["playerctl", "metadata", "--format", "{{ artist }} - {{ title }}"], 
+            text=True
+        ).strip()
+        return f"Status: {status} | Now Playing: {metadata}"
+    except:
+        return "No media player is currently active."
+
+all_tools = [send_notification, get_open_windows, launch_app, switch_workspace, close_active_window, control_media, get_media_info]
+

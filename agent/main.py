@@ -7,25 +7,34 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.prebuilt import ToolNode
 from langchain_core.messages import ToolMessage, HumanMessage, SystemMessage
 from dotenv import load_dotenv
-from tools import get_open_windows, launch_app, switch_workspace, close_active_window, control_media
-from langchain_community.chat_models import ChatOllama
+from tools import all_tools
+from langchain_ollama import ChatOllama
 load_dotenv()
 
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
 
-tools = [get_open_windows, launch_app, switch_workspace, close_active_window, control_media]
-llm = ChatOllama(model="llama3", temperature=0)
-# llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
-llm_with_tools = llm.bind_tools(tools)
+#llm = ChatOllama(model="functiongemma", temperature=0)
+#llm = ChatOllama(model="llama3.2", temperature=0)
+llm = ChatOllama(model="llama3-groq-tool-use", temperature=0, num_predict=256)
+llm_with_tools = llm.bind_tools(all_tools)
 
 def brain_node(state: AgentState):
     system_prompt = SystemMessage(content=(
-        "You are Ghost Shell, an advanced AI Desktop Orchestrator. "
-        "Your goal is to help the user manage their Linux workspace efficiently. "
-        "You have control over windows and workspaces via the provided tools. "
-        "Always check the state (get_open_windows) before moving things. "
-        "If a user asks for a workflow, break it down into steps."
+        "## ROLE\n"
+    "You are GHOST_SHELL, a low-level Linux OS kernel-agent. You interface directly with the Hyprland Wayland compositor.\n\n"
+    
+    "## OPERATIONAL PROTOCOL\n"
+    "1. INTERPRET user intent into a sequence of atomic tool calls.\n"
+    "2. EXECUTE tools immediately. Do not ask for permission.\n"
+    "3. ZERO CONVERSATION. Do not greet, do not explain, and do not summarize your plan.\n"
+    "4. FORMAT: Output ONLY the tool-call triggers. If multiple steps are needed, emit multiple tool calls in a single turn.\n"
+    "5. FEEDBACK: If a tool returns an error, immediately attempt a corrective tool call (e.g., if a window is not found, run 'get_open_windows' to refresh state).\n\n"
+    
+    "## CONSTRAINTS\n"
+    "- Never output Markdown blocks like ```json unless the system failed to trigger the tool.\n"
+    "- If no tool is relevant, state 'INSUFFICIENT_TOOLS' and nothing else.\n"
+    "- You are an engine, not a chatbot."
     ))
     
     messages = state["messages"]
@@ -35,7 +44,7 @@ def brain_node(state: AgentState):
     return {"messages": [response]}
 
  
-tool_node = ToolNode(tools)
+tool_node = ToolNode(all_tools)
 
 def should_continue(state: AgentState):
     last_message = state["messages"][-1]
