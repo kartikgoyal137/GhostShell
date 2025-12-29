@@ -2,11 +2,9 @@ package ipc
 
 import (
 	"fmt"
-	//"os"
 	"bufio"
 	"net"
 	"strings"
-	//"encoding/json"
 )
 
 func ListenEvents(state *State) error {

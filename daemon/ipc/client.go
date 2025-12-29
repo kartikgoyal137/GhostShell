@@ -73,4 +73,21 @@ func GetWindows() ([]Window , error) {
 	return win, nil
 }
 
+func Dispatch(cmd string) error {
+	socketPath := GetPath(1)
+	conn, err := net.Dial("unix", socketPath)
+	if err!=nil {
+		fmt.Println("unix domain socket connection failed")
+		return err
+	}
+	defer conn.Close()
 
+	_, err = conn.Write([]byte(cmd))
+	if err!=nil {
+		fmt.Println("failed to write into socket")
+		return err
+	}
+  
+	return nil
+
+}

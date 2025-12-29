@@ -7,9 +7,9 @@ import (
 )
 
 type State struct {
-	Mu sync.RWMutex
-	Win map[string]Window
-	Active int
+	Mu sync.RWMutex `json:"-"`
+	Win map[string]Window `json:"windows"`
+	Active int `json:"active"`
 }
 
 func NewState() *State {
