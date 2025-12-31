@@ -78,12 +78,11 @@ def switch_workspace(id: int):
         
     return f"Switched to workspace {id}"
 
-def close_active_window():
+def close_window(address: str):
     """
-    Closes the window that currently holds focus on the active workspace.
-    Equivalent to pressing Alt+F4 or the window close button.
+    Fetch the list of open windows and find the address of the window which the user has asked to close. Then call this function with that address
     """
-    result = client.send_command("dispatch killactive")
+    result = client.send_command(f"dispatch closewindow address:{address}")
     
     success, output = _validate_ipc(result)
     if not success:
@@ -120,4 +119,4 @@ def get_media_info():
     except:
         return "No media player is currently active."
 
-all_tools = [get_open_windows, launch_app, switch_workspace, close_active_window, control_media, get_media_info]
+all_tools = [get_open_windows, launch_app, switch_workspace, close_window, control_media, get_media_info]

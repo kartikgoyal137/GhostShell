@@ -2,6 +2,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 from typing import Literal
 from langgraph.checkpoint.memory import MemorySaver
+
 from src.agent.state import AgentState
 from src.agent.nodes import sync_os_state, brain_node
 from src.tools import all_tools
@@ -23,7 +24,6 @@ def build_graph():
     builder.add_node("sync", sync_os_state)
     builder.add_node("agent", brain_node)
     builder.add_node("tools", ToolNode(all_tools))
-
     builder.add_edge(START, "sync")
     builder.add_edge("sync", "agent")
 
@@ -36,7 +36,7 @@ def build_graph():
         }
     )
 
-    builder.add_edge("tools", "sync")
-    memory = MemorySaver()
+    builder.add_edge("tools", "agent")
 
+    memory = MemorySaver()
     return builder.compile(checkpointer=memory)
