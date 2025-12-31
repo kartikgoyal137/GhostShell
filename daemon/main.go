@@ -5,6 +5,8 @@ import (
 	"github.com/kartikgoyal137/ghostshell/server"
 	"github.com/kartikgoyal137/ghostshell/ipc"
   "net/http"
+	"os"
+	"net"
 )
 
 func main() {
@@ -16,9 +18,15 @@ func main() {
 	}
 	
 	go ipc.ListenEvents(state)
-
+	socketPath := "/tmp/ghostshell.sock"
 	srv := server.NewServer(state)
-  http.ListenAndServe(":8080", srv.Mux)
+	
+	os.Remove(socketPath)
+	listener, err := net.Listen("unix", socketPath)
+	os.Chmod(socketPath, 0600)
+	defer listener.Close()
+
+  http.Serve(listener, srv.Mux)
 
 	select{}
 

@@ -1,0 +1,23 @@
+general:
+  browser: "brave-browser"
+  terminal: "kitty"
+  theme: "dark"
+
+workflows:
+  coding_mode:
+    description: "Setup the environment for coding tasks"
+    actions:
+      - "Move to Workspace 4"
+      - "Open VS Code"
+      - "Open Kitty Terminal"
+       
+  music_mode:
+    description: "launch spotify and play media using control_media tool"
+    actions:
+      - "Move to workspace 3"
+      - "Launch Spotify"
+      - "Play media"
+
+rules:
+  - "Always check if a window is open before trying to open it again."
+  - "Never close window ID 0x1234."

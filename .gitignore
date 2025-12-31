@@ -1,4 +1,7 @@
 agent/.env
 agent/venv
 agent/__pycache__/
+agent/src/agent/__pycache__
+agent/src/core/__pycache__
+agent/src/tools/__pycache__
 

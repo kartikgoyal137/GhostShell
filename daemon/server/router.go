@@ -47,12 +47,21 @@ func (s *Server) handleDispatch(w http.ResponseWriter, r *http.Request) {
 		return
   }
 
-  err := ipc.Dispatch(req.Cmd)
-  if err != nil {
-    http.Error(w, err.Error(), http.StatusInternalServerError)
-    return
-  }
+  output, err := ipc.Dispatch(req.Cmd)
+  w.Header().Set("Content-Type", "application/json")
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        json.NewEncoder(w).Encode(map[string]string{
+            "status": "error",
+            "message": err.Error(),
+            "output": output,
+        })
+        return
+    }
 
-  w.WriteHeader(http.StatusOK)
-  json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+    json.NewEncoder(w).Encode(map[string]string{
+        "status": "ok",
+        "output": output,
+    })
+
 }

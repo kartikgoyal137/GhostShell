@@ -6,6 +6,8 @@ import (
 	"io"
 	"fmt"
 	"net"
+	"os/exec"
+	"strings"
 )
 
 type Window struct {
@@ -21,12 +23,6 @@ type Window struct {
 type WorkspaceRef struct {
 	ID int
 	Name string 
-}
-
-type Workspace struct {
-	ID int
-	Name string
-	Windows []Window
 }
 
 func GetPath(n int) string {
@@ -73,21 +69,21 @@ func GetWindows() ([]Window , error) {
 	return win, nil
 }
 
-func Dispatch(cmd string) error {
+func Dispatch(cmd string) (string, error) {
 	socketPath := GetPath(1)
 	conn, err := net.Dial("unix", socketPath)
 	if err!=nil {
 		fmt.Println("unix domain socket connection failed")
-		return err
+		return "", err
 	}
 	defer conn.Close()
 
-	_, err = conn.Write([]byte(cmd))
-	if err!=nil {
-		fmt.Println("failed to write into socket")
-		return err
-	}
-  
-	return nil
+	fullCmd := append([]string{"hyprctl"}, strings.Fields(cmd)...)
+	out, err := exec.Command(fullCmd[0], fullCmd[1:]...).CombinedOutput()
 
+	if err!=nil {
+		return string(out), err
+	}
+
+	return string(out), nil
 }
