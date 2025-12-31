@@ -1,5 +1,7 @@
 import subprocess
 from src.core.client import GhostClient
+import os
+from duckduckgo_search import DDGS
 
 client = GhostClient()
 
@@ -8,6 +10,51 @@ IPC_NOISE_PATTERNS = [
     "Couldn't read (6)",
     "Resource temporarily unavailable"
 ]
+
+
+def web_search(query: str):
+    """
+    Performs a web search using DuckDuckGo and returns the top 5 results.
+    Args:
+        query (str): The search term (e.g., 'python install poetry', 'weather in Tokyo').
+    """
+    try:
+        results = DDGS().text(query, max_results=5)
+        if not results:
+            return "No results found."
+        
+        formatted = []
+        for r in results:
+            formatted.append(f"Title: {r['title']}\nURL: {r['href']}\nSnippet: {r['body']}\n")
+            
+        return "\n".join(formatted)
+    except Exception as e:
+        return f"Search failed: {e}"
+
+def list_files(directory: str = "."):
+    """
+    Lists files and directories in the specified path.
+    host username is 'kartik'
+    Args:
+        directory (str): The path to list. Defaults to current directory.
+    """
+    try:
+        files = os.listdir(directory)
+        return f"Contents of {directory}:\n" + "\n".join(files)
+    except Exception as e:
+        return f"Error listing directory: {e}"
+
+def read_file(filepath: str):
+    """
+    Reads the contents of a specific file.
+    Args:
+        filepath (str): The full path to the file.
+    """
+    try:
+        with open(filepath, 'r') as f:
+            return f.read()
+    except Exception as e:
+        return f"Error reading file: {e}"
 
 def _validate_ipc(result: dict) -> tuple[bool, str]:
     output = result.get('shell_output', result.get('output', '')).strip()
@@ -42,8 +89,8 @@ def get_open_windows():
         workspace_name = win.get('workspace', {}).get('Name', 'Unknown')
         title = win.get('title', 'Unknown Title')
         app_class = win.get('class', 'Unknown App')
-        report.append(f"- {title} (on Workspace {workspace_name})")
-
+        report.append(f"- [ID: {address}] {title} (on Workspace {workspace_name})")
+ 
     return "\n".join(report)
 
 def launch_app(name: str):
@@ -119,4 +166,35 @@ def get_media_info():
     except:
         return "No media player is currently active."
 
-all_tools = [get_open_windows, launch_app, switch_workspace, close_window, control_media, get_media_info]
+def move_window_to_workspace(address: str, workspace_id: int):
+    """
+    Moves a specific open window to a target workspace.
+    Args:
+        address (str): The window ID/Address (get this from get_open_windows).
+        workspace_id (int): The target workspace number.
+    """
+    cmd = f"dispatch movetoworkspacesilent {workspace_id},address:{address}"
+    result = client.send_command(cmd)
+    
+    success, output = _validate_ipc(result)
+    if not success:
+        return f"Failed to move window. Error: {output}"
+    
+    return f"Moved window {address} to workspace {workspace_id}."
+
+def pin_window(address: str = None):
+    """
+    Pins a window (floats it and makes it visible on ALL workspaces).
+    fetch the address of the window asked by the user and pass it to this function.
+    Args:
+        address (str):  window address.
+    """
+    target = f"address:{address}" if address else "activewindow"
+    client.send_command(f"dispatch setfloating {target}") 
+    cmd = f"dispatch pin {target}"
+    result = client.send_command(cmd)
+    
+    success, output = _validate_ipc(result)
+    return "Window pinned (visible on all workspaces)." if success else f"Failed: {output}"
+
+all_tools = [get_open_windows, launch_app, switch_workspace, close_window, control_media, get_media_info, list_files, read_file, web_search, move_window_to_workspace, pin_window]
