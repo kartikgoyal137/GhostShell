@@ -41,6 +41,7 @@ def get_open_windows():
     for address, win in windows.items():
         workspace_name = win.get('workspace', {}).get('Name', 'Unknown')
         title = win.get('title', 'Unknown Title')
+        app_class = win.get('class', 'Unknown App')
         report.append(f"- {title} (on Workspace {workspace_name})")
 
     return "\n".join(report)

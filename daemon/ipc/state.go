@@ -22,17 +22,17 @@ func (s *State) RefreshWindows() {
 	win, err := GetWindows()
 	if err!=nil {
 		fmt.Println("failed to fetch windows")
+		return
 	}
 
 	s.Mu.Lock()
+	defer s.Mu.Unlock()
 
 	s.Win = make(map[string]Window)
 
 	for _ , v := range win {
 		s.Win[v.Address] = v
 	}
-
-	s.Mu.Unlock()
 
 }
 

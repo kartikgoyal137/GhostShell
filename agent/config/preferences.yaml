@@ -7,16 +7,14 @@ workflows:
   coding_mode:
     description: "Setup the environment for coding tasks"
     actions:
-      - "Move to Workspace 4"
-      - "Open VS Code"
-      - "Open Kitty Terminal"
-       
+      - "Move to Workspace 4, then Open VS Code and Kitty terminal"
+      - "Terminate process"
   music_mode:
     description: "launch spotify and play media using control_media tool"
     actions:
       - "Move to workspace 3"
-      - "Launch Spotify"
-      - "Play media"
+      - "Launch Spotify and play media"
+      - "Terminate process"
 
 rules:
   - "Always check if a window is open before trying to open it again."

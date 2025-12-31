@@ -45,8 +45,9 @@ def main():
             }
 
             logger.info(f"Processing request: {user_input}")
+            config = {"configurable": {"thread_id": "1"}}
             
-            for event in ghost_shell.stream(initial_state):
+            for event in ghost_shell.stream(initial_state, config=config):
                 for node_name, node_state in event.items():
                     if node_name == "agent":
                         last_msg = node_state["messages"][-1]

@@ -1,21 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"github.com/kartikgoyal137/ghostshell/server"
 	"github.com/kartikgoyal137/ghostshell/ipc"
   "net/http"
 	"os"
+	"fmt"
 	"net"
 )
 
 func main() {
 	state := ipc.NewState()
 
-	_ , err := ipc.GetWindows()
-	if err!=nil {
-		fmt.Println("error fetching windows")
-	}
+	state.RefreshWindows()
 	
 	go ipc.ListenEvents(state)
 	socketPath := "/tmp/ghostshell.sock"
@@ -23,6 +20,11 @@ func main() {
 	
 	os.Remove(socketPath)
 	listener, err := net.Listen("unix", socketPath)
+  if err!=nil {
+			fmt.Println("failed to setup listner")
+			return
+	}
+
 	os.Chmod(socketPath, 0600)
 	defer listener.Close()
 

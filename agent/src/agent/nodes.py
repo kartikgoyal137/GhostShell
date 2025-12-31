@@ -8,7 +8,7 @@ from src.agent.state import AgentState
 from src.tools import all_tools
 
 
-llm = ChatOllama(model="gpt-oss:20b", temperature=0, num_predict=512)
+llm = ChatOllama(model="rnj-1:8b", temperature=0, num_predict=512)
 llm_with_tools = llm.bind_tools(all_tools)
 pref_manager = PreferenceManager()
 
@@ -34,8 +34,11 @@ def brain_node(state: AgentState):
 
     windows = state.get("windows", {})
     if windows:
-        win_list = [f"- {w.get('title', 'Unknown')} (ID: {addr}, Workspace: {w.get('workspace', {}).get('Name', '?')})" 
-                   for addr, w in windows.items()]
+        win_list = [
+            f"- [{w.get('class', 'App')}] {w.get('title', 'Unknown')} "
+            f"(ID: {addr}, Workspace: {w.get('workspace', {}).get('Name', '?')})" 
+            for addr, w in windows.items()
+        ]
         formatted_windows = "\n".join(win_list)
     else:
         formatted_windows = "No active windows found."

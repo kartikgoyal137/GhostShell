@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 from typing import Literal
-
+from langgraph.checkpoint.memory import MemorySaver
 from src.agent.state import AgentState
 from src.agent.nodes import sync_os_state, brain_node
 from src.tools import all_tools
@@ -37,5 +37,6 @@ def build_graph():
     )
 
     builder.add_edge("tools", "sync")
+    memory = MemorySaver()
 
-    return builder.compile()
+    return builder.compile(checkpointer=memory)

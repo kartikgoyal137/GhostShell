@@ -6,8 +6,6 @@ import (
 	"io"
 	"fmt"
 	"net"
-	"os/exec"
-	"strings"
 )
 
 type Window struct {
@@ -78,9 +76,12 @@ func Dispatch(cmd string) (string, error) {
 	}
 	defer conn.Close()
 
-	fullCmd := append([]string{"hyprctl"}, strings.Fields(cmd)...)
-	out, err := exec.Command(fullCmd[0], fullCmd[1:]...).CombinedOutput()
+	_, err = conn.Write([]byte(cmd))
+	if err!=nil {
+		return "", err
+	}
 
+	out, err := io.ReadAll(conn)
 	if err!=nil {
 		return string(out), err
 	}
